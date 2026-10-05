@@ -35,6 +35,11 @@ Some configuration is available through compile-defines. These defines apply to 
 
 This backend provides raw HID support on Linux through the `hidraw` kernel driver. Raw input/output reports and device descriptor retrieval are implemented, which allows the built-in HID functionality of the input system to work as expected, including custom device layouts.
 
+Generic native Linux joystick/gamepad layouts are disabled to avoid duplicates
+with hidraw devices. Native Linux layouts with an explicitly registered custom
+device type are preserved, allowing non-HID drivers such as `xone` to be handled
+by a companion controller-layout package.
+
 #### Dependencies
 
 This backend relies on the hidraw version of `hidapi` for input, along with `libudev` for device connection/disconnection monitoring. By installing this package, your project will become dependent on them as well on Linux. On distributions that use `apt`, the following command should do the trick:

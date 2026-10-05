@@ -56,7 +56,10 @@ namespace HIDrogen.Backend
         private static string OnFindLayoutForDevice(ref InputDeviceDescription description, string matchedLayout,
             InputDeviceExecuteCommandDelegate executeCommandDelegate)
         {
-            if (description.interfaceName != kLinuxInterface)
+            if (description.interfaceName != kLinuxInterface ||
+                HasExplicitDeviceType(string.IsNullOrEmpty(matchedLayout)
+                    ? null
+                    : InputSystem.LoadLayout(matchedLayout)?.type))
                 return null;
 
             // TODO: This does work, but it causes an exception internally
@@ -70,11 +73,20 @@ namespace HIDrogen.Backend
             if (device == null)
                 return;
 
-            if (device.description.interfaceName == kLinuxInterface) // || interfaceName != kSDLInterface) // Not ignored as Xbox devices are not handled by hidraw
+            if (device.description.interfaceName == kLinuxInterface &&
+                !HasExplicitDeviceType(device.GetType()))
             {
                 Logging.Verbose($"Removing device {device}");
                 InputSystem.RemoveDevice(device);
             }
+        }
+
+        private static bool HasExplicitDeviceType(Type type)
+        {
+            // Generic SDL devices are replaced by hidraw, but custom native layouts
+            // may handle non-HID protocols that hidraw cannot access.
+            return type != null && type != typeof(InputDevice) &&
+                type != typeof(Joystick) && type != typeof(Gamepad);
         }
     }
 }
